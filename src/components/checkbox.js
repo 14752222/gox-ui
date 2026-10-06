@@ -1,16 +1,23 @@
-// GxCheckbox / GxRadio / GxCheckboxGroup — 复选/单选
-// GxCheckboxGroup: options 数组 + value (数组) + onChange, 内部用 row 排一组 checkbox。
+// GxCheckbox / GxRadio / GxCheckboxGroup —— 复选 / 单选
+//
+//   GxCheckbox(model | checked, disabled)
+//   GxRadio(model | checked, value, disabled)
+//   GxCheckboxGroup(options, value: 数组/函数, onChange, gap)
+//
+// 选项行 = row [checkbox] [label], 点整行切换 (命中区大一点更好点)。
 
 import { h } from "gx/gfx";
-import { palette } from "../theme.js";
+import { palette, space } from "../theme.js";
+import { txt } from "../styles.js";
 import { resolveVal } from "../utils.js";
 
 export function GxCheckbox(props) {
   const p = props || {};
   const cp = {};
   if (p.model !== undefined) cp.model = p.model;
-  if (p.checked !== undefined) cp.checked = p.checked;
+  else if (p.checked !== undefined) cp.checked = p.checked;
   if (p.onClick) cp.onClick = p.onClick;
+  if (p.disabled !== undefined) cp.disabled = p.disabled;
   if (p.background !== undefined) cp.background = p.background;
   return h("checkbox", cp);
 }
@@ -22,6 +29,7 @@ export function GxRadio(props) {
   if (p.value !== undefined) rp.value = p.value;
   if (p.checked !== undefined) rp.checked = p.checked;
   if (p.onClick) rp.onClick = p.onClick;
+  if (p.disabled !== undefined) rp.disabled = p.disabled;
   return h("radio", rp);
 }
 
@@ -31,20 +39,25 @@ export function GxCheckboxGroup(props) {
   const options = p.options || [];
   const selected = resolveVal(p.value) || [];
 
-  return h("row", { gap: p.gap !== undefined ? p.gap : 12, alignItems: "center" },
+  return h("row", {
+    gap: p.gap !== undefined ? p.gap : space.xl,
+    alignItems: "center",
+    wrap: p.wrap !== undefined ? p.wrap : true,
+  },
     ...options.map((opt) => {
       const val = typeof opt === "string" ? opt : opt.value;
       const label = typeof opt === "string" ? opt : opt.label;
       const on = selected.indexOf(val) >= 0;
-      return h("row", { gap: 6, alignItems: "center" },
-        h("checkbox", {
-          checked: on,
-          onClick: () => {
-            if (!p.onChange) return;
-            const next = on ? selected.filter((x) => x !== val) : selected.concat([val]);
-            p.onChange({ value: next });
-          },
-        }),
-        h("text", { font: 13, color: c.textRegular }, label));
+      return h("row", {
+        gap: space.sm,
+        alignItems: "center",
+        onClick: p.disabled ? undefined : () => {
+          if (!p.onChange) return;
+          const next = on ? selected.filter((x) => x !== val) : selected.concat([val]);
+          p.onChange({ value: next });
+        },
+      },
+        h("checkbox", { checked: on, disabled: p.disabled }),
+        txt(c, { size: "base", color: p.disabled ? c.textDisabled : c.textRegular }, label));
     }));
 }

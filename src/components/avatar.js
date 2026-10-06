@@ -1,5 +1,9 @@
-// GxAvatar — Element Plus 风格头像 (复用内核 avatar)
-//   name / size / color / round / icon
+// GxAvatar —— Element Plus 风格头像 (内核 avatar 的包装)
+//
+//   name  显示的文字 (取首字符)
+//   size  直径 (缺省 40)
+//   color 背景色 (缺省主蓝)
+//   round true (缺省, 正圆) | false (圆角方形)
 
 import { h } from "gx/gfx";
 import { palette } from "../theme.js";

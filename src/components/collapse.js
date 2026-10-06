@@ -1,55 +1,92 @@
-// GxCollapse — Element Plus 风格折叠面板 (el-collapse)
-//   items: [{title, content: 元素或数组, name?}]
-//   accordion: 手风琴模式 (同时只开一个)
-//   model / activeNames: 受控展开列表
+// GxCollapse —— Element Plus 风格折叠面板 (el-collapse)
+//
+//   items: [{ title, content: 元素/数组/函数, name? }]
+//   accordion   手风琴模式 (同时只开一个)
+//   activeNames 受控展开名列表 (数组 / 函数)
+//   model       同 activeNames (别名)
+//   onChange({ activeNames })
+//   width / gap / bordered
+//
+// 观感: 整组共用一个描边圆角面板, 项与项之间用 1px 分隔线切开 ——
+// 这是 Element Plus 的口径, 比"每项各一个圆角卡片"更整齐。
+// (每项若是独立圆角卡片, 展开态会在列表里跳出一截, 视觉上很吵。)
 
 import { h } from "gx/gfx";
 import { createSignal } from "gx/solid";
-import { palette } from "../theme.js";
-import { flattenChildren } from "../utils.js";
+import { palette, space, radius as radiusScale } from "../theme.js";
+import { panel, hline, txt, normalize, pad } from "../styles.js";
+import { flattenChildren, resolveVal } from "../utils.js";
 
 export function GxCollapse(props, ...children) {
   const p = props || {};
   const c = palette();
   const items = p.items || [];
 
-  // 内部展开状态: 受控优先, 否则自管 signal (首个默认展开)
+  const controlled = p.activeNames !== undefined ? p.activeNames : p.model;
+  const initial = resolveVal(controlled);
   const [openNames, setOpenNames] = createSignal(
-    p.activeNames ? [...p.activeNames] : (items.length > 0 ? [items[0].name || items[0].title] : []));
+    Array.isArray(initial) ? initial.slice()
+      : (items.length > 0 ? [items[0].name !== undefined ? items[0].name : items[0].title] : []));
 
-  const isOpen = (name) => openNames().indexOf(name) >= 0;
+  const current = () => (controlled !== undefined ? (resolveVal(controlled) || []) : openNames());
+  const isOpen = (name) => current().indexOf(name) >= 0;
 
   const toggle = (name) => {
-    const cur = openNames();
-    let next;
-    if (cur.indexOf(name) >= 0) {
-      next = cur.filter((x) => x !== name);
-    } else {
-      next = p.accordion ? [name] : cur.concat([name]);
-    }
-    setOpenNames(next);
+    const cur = current().slice();
+    const next = cur.indexOf(name) >= 0
+      ? cur.filter((x) => x !== name)
+      : (p.accordion ? [name] : cur.concat([name]));
+    if (controlled === undefined) setOpenNames(next);
     if (p.onChange) p.onChange({ activeNames: next });
   };
 
-  const panels = items.map((it, idx) => {
-    const name = it.name || it.title;
+  const blocks = [];
+  items.forEach((it, idx) => {
+    const name = it.name !== undefined ? it.name : it.title;
     const open = isOpen(name);
-    const content = typeof it.content === "function" ? it.content() : it.content;
-    const contentKids = content === undefined || content === null ? flattenChildren(children) : (Array.isArray(content) ? content : [content]);
+    const raw = typeof it.content === "function" ? it.content() : it.content;
+    const kids = raw === undefined || raw === null ? flattenChildren(children)
+      : (Array.isArray(raw) ? raw : [raw]);
+    const disabled = !!it.disabled;
 
-    return h("rect", { border: c.borderLighter, radius: 4, width: p.width },
-      h("column", { width: "100%" },
-        h("row", {
-          padding: 10, paddingLeft: 12, alignItems: "center",
-          onClick: () => toggle(name),
-        },
-          h("text", { font: 13, fontWeight: 600, color: c.textPrimary }, it.title || ""),
-          h("spacer", { flexGrow: 1 }),
-          h("text", { font: 10, color: c.textSecondary }, open ? "▲" : "▼")),
-        open ? h("column", { padding: 12, paddingTop: 0, gap: 6, width: "100%" },
-          ...contentKids) : null,
-      ));
+    const header = panel(c, {
+      direction: "row",
+      gap: space.md,
+      alignItems: "center",
+      padProps: pad({ t: space.lg, r: space.xl, b: space.lg, l: space.xl }),
+      extra: {
+        onClick: disabled ? undefined : () => toggle(name),
+        background: disabled ? c.fillLight : undefined,
+      },
+    }, [
+      txt(c, {
+        size: "base",
+        weight: 500,
+        color: disabled ? c.textDisabled : (open ? c.primary : c.textPrimary),
+      }, it.title === undefined ? "" : it.title),
+      h("spacer", { flexGrow: 1 }),
+      txt(c, { size: "xs", color: disabled ? c.textDisabled : c.textSecondary }, open ? "▲" : "▼"),
+    ]);
+
+    const body = open
+      ? panel(c, {
+          direction: "column",
+          gap: space.md,
+          alignItems: "start",
+          padProps: pad({ t: 0, r: space.xl, b: space.xl, l: space.xl }),
+        }, normalize(kids))
+      : null;
+
+    if (idx > 0) blocks.push(hline(c, { color: c.borderLighter }));
+    blocks.push(panel(c, { direction: "column", gap: 0 }, [header, body]));
   });
 
-  return h("column", { gap: 10 }, ...panels);
+  return panel(c, {
+    direction: "column",
+    gap: 0,
+    bg: p.bordered === false ? null : c.surface,
+    border: p.bordered === false ? null : c.borderLight,
+    radius: radiusScale.md,
+    width: p.width,
+  }, blocks);
 }

@@ -1,14 +1,26 @@
-// GoxUI — Element Plus 风格的 Gox 桌面 GUI 组件库
+// GoxUI —— Element Plus 风格的 Gox 桌面 GUI 组件库
 //
 // 聚合入口: 应用代码 `import { GxButton } from "gox-ui"` 一行拿全。
 // 细分模块按需导入 (库代码推荐):
 //   import { GxButton } from "gox-ui/src/components/button.js"
 //
-// 运行时要求: Gox >= 当前 main (gx/gfx, gx/solid, gx/theme)。
+// 运行时要求: Gox >= 0.9 (gx/gfx, gx/solid, gx/theme)。
 
 // ---- 主题与工具 ----
-export { palette, paletteOf, typeTone, typeTint, typeMid, sizeTable, radiusTable } from "./theme.js";
-export { mergeProps, flattenChildren, firstChild, isDarkMode } from "./utils.js";
+export {
+  palette, paletteOf, mode, setMode, isDarkMode, invalidateTheme,
+  withAlpha, mix, lighten, darken,
+  space, radius, fontSize, fontWeight, control, sizeOf,
+  shadow, toneOf, typeTone, typeTint, typeMid, typeIcon, typeGlyph,
+  palettes,
+} from "./theme.js";
+export { sizeTable, radiusTable } from "./theme.js";
+export {
+  mergeProps, flattenChildren, firstChild, resolveVal, pickValue,
+} from "./utils.js";
+export {
+  box, panel, surfaceProps, pad, txt, hline, vline, normalize, gap as gapSpacer,
+} from "./styles.js";
 
 // ---- 基础组件 ----
 export { GxButton } from "./components/button.js";
@@ -26,7 +38,7 @@ export { GxIcon } from "./components/icon.js";
 // ---- 布局 ----
 export { GxSpace } from "./components/space.js";
 export { GxDivider } from "./components/divider.js";
-export { GxCard } from "./components/card.js";
+export { GxCard, cardMetrics } from "./components/card.js";
 export { GxCollapse } from "./components/collapse.js";
 
 // ---- 导航 ----

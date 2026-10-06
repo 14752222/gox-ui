@@ -1,8 +1,13 @@
-// GxBreadcrumb — Element Plus 风格面包屑 (el-breadcrumb)
-//   items: [{label, onClick?}] — 最后一项是当前页 (不可点)
+// GxBreadcrumb —— Element Plus 风格面包屑 (el-breadcrumb)
+//
+//   items: [{ label, onClick? }] 最后一项是当前页 (不可点)
+//   separator: 分隔符 (缺省 "/")
+//
+// 可点项主色、当前项文字主色, 分隔符浅灰。
 
 import { h } from "gx/gfx";
-import { palette } from "../theme.js";
+import { palette, space } from "../theme.js";
+import { txt } from "../styles.js";
 
 export function GxBreadcrumb(props) {
   const p = props || {};
@@ -13,15 +18,15 @@ export function GxBreadcrumb(props) {
   const kids = [];
   items.forEach((it, i) => {
     const last = i === items.length - 1;
-    kids.push(h("text", {
-      font: 12,
+    kids.push(txt(c, {
+      size: "base",
       color: last ? c.textPrimary : c.primary,
       onClick: (!last && it.onClick) ? (e) => it.onClick(e) : undefined,
-    }, it.label || ""));
+    }, it.label === undefined ? "" : it.label));
     if (!last) {
-      kids.push(h("text", { font: 12, color: c.textPlaceholder }, sep));
+      kids.push(txt(c, { size: "sm", color: c.textPlaceholder }, sep));
     }
   });
 
-  return h("row", { gap: 6, alignItems: "center" }, ...kids);
+  return h("row", { gap: space.sm, alignItems: "center" }, ...kids);
 }

@@ -1,8 +1,13 @@
-// GxTimeline — Element Plus 风格时间线 (el-timeline)
-//   items: [{content, timestamp, type?, hollow?}]
+// GxTimeline —— Element Plus 风格时间线 (el-timeline)
+//
+//   items: [{ content, timestamp?, type?, hollow?, color? }]
+//
+// 布局: 每项是 row [左列: 点+线] [右列: 内容]。左列 width 固定 16;
+// 点后的竖线 flexGrow=1 吃掉左列剩余高。右列内容底 padding 拉开项间距。
 
 import { h } from "gx/gfx";
-import { palette, typeTone } from "../theme.js";
+import { palette, toneOf, space } from "../theme.js";
+import { panel, txt } from "../styles.js";
 
 export function GxTimeline(props) {
   const p = props || {};
@@ -10,24 +15,36 @@ export function GxTimeline(props) {
   const items = p.items || [];
 
   const rows = items.map((it, i) => {
-    const toneKey = typeTone[it.type || "primary"] || "primary";
-    const dotColor = it.hollow ? c.fillBlankest : c[toneKey];
+    const tone = toneOf(c, it.type || "primary");
+    const dotColor = it.color || tone.fg;
     const isLast = i === items.length - 1;
 
-    return h("row", { gap: 10 },
-      // 左: 点 + 竖线
-      h("column", { alignItems: "center", width: 14 },
-        h("rect", {
-          width: 10, height: 10, radius: 5,
-          background: dotColor, border: it.hollow ? c[toneKey] : "#00000000",
-        }),
-        isLast ? null : h("rect", { width: 2, flexGrow: 1, background: c.borderLight })),
-      // 右: 内容
-      h("column", { gap: 2, flexGrow: 1 },
-        h("text", { font: 13, color: c.textPrimary }, it.content || ""),
-        it.timestamp ? h("text", { font: 11, color: c.textSecondary }, it.timestamp) : null,
-      ));
+    const left = panel(c, { direction: "column", alignItems: "center", width: 16 }, [
+      h("column", {
+        width: 10, height: 10, radius: 5,
+        background: it.hollow ? c.surface : dotColor,
+        border: it.hollow ? dotColor : "#00000000",
+        borderWidth: 2,
+        marginTop: 3,
+      }),
+      isLast ? null : h("column", {
+        width: 2, flexGrow: 1, background: c.borderLighter, marginTop: 4,
+      }),
+    ]);
+
+    const right = panel(c, {
+      direction: "column",
+      gap: space.xxs,
+      flexGrow: 1,
+      alignItems: "start",
+      extra: { paddingBottom: isLast ? 0 : space.lg },
+    }, [
+      it.timestamp ? txt(c, { size: "xs", color: c.textSecondary }, it.timestamp) : null,
+      txt(c, { size: "base", color: c.textPrimary }, it.content === undefined ? "" : it.content),
+    ]);
+
+    return panel(c, { direction: "row", gap: space.md, alignItems: "start" }, [left, right]);
   });
 
-  return h("column", { gap: 12 }, ...rows);
+  return panel(c, { direction: "column", gap: space.lg }, rows);
 }
