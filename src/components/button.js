@@ -4,9 +4,10 @@
 // 叠 Element 同款语义:
 //
 //   type      primary | success | warning | danger | info | "" (缺省中性)
-//   size      large | default | small        (高度 40 / 32 / 24, 圆角 6)
+//   size      large | default | small (触控档自动升至 ≥44 命中高)
+//   touch     显式指定触控/鼠标档 (缺省按设备判定)
+//   vibrate   触控档点击时轻震动 (缺省 true)
 //   plain     朴素按钮 (浅底 + 主色文字与描边)
-//   round     胶囊圆角
 //   circle    正圆 (配合 icon, 宽高相等)
 //   text      文字按钮 (无底无边)
 //   link      链接按钮 (无底无边无内边距, 主色文字)
@@ -26,11 +27,27 @@ import { h } from "gx/gfx";
 import { palette, toneOf, sizeOf, radius as radiusScale } from "../theme.js";
 import { mergeProps, flattenChildren } from "../utils.js";
 import { gap } from "../styles.js";
+import { isTouch, controlFor, vibrateTap } from "../adaptive.js";
+
+// mergeClick: 触控档默认附上轻震动反馈 (用户 onClick 不受影响)。
+// p.vibrate === false 可关。声明在 GxButton 之前 (export function 不提升)。
+const mergeClick = (userClick, p) => {
+  if (!isTouch() || p.vibrate === false) return userClick;
+  return (e) => { vibrateTap(); if (userClick) userClick(e); };
+};
+
+// sizeFor: 尺寸唯一入口 —— 触控档自动升到 touchControl (≥44 命中),
+// 鼠标档用桌面 control 表。p.touch 可显式覆盖判定。
+const sizeFor = (p) => {
+  const forceTouch = p && p.touch !== undefined ? !!p.touch : undefined;
+  const t = controlFor(p && p.size, { forceTouch });
+  return t || sizeOf(p && p.size);
+};
 
 export function GxButton(props, ...children) {
   const p = props || {};
   const c = palette();
-  const size = sizeOf(p.size);
+  const size = sizeFor(p);
   const type = p.type || "";
   const tone = toneOf(c, type);
   const hasTone = !!type && type !== "";
@@ -89,7 +106,7 @@ export function GxButton(props, ...children) {
     if (p.width !== undefined) bp.width = p.width;
     else if (p.block) bp.width = "100%";
   }
-  if (p.onClick) bp.onClick = p.onClick;
+  if (p.onClick) bp.onClick = mergeClick(p.onClick, p);
   if (p.title) bp.title = p.title;
 
   return h("button", mergeProps(bp, p.nativeProps || {}), ...inner);
