@@ -22,6 +22,15 @@ export {
   box, panel, surfaceProps, pad, txt, hline, vline, normalize, gap as gapSpacer,
 } from "./styles.js";
 
+// ---- 多端自适应 ----
+export {
+  platform, isMobilePlatform, isTabletDevice, isTouch, setPointerOverride,
+  sizeClass, isCompact, isMedium, isExpanded, safeArea, keyboardUp,
+  controlFor, touchSpace, minTouchTarget, hitSlopPad,
+  adaptive, dialogBehavior, tooltipBehavior, listRowHeight, vibrateTap,
+  invalidateDevice,
+} from "./adaptive.js";
+
 // ---- 基础组件 ----
 export { GxButton } from "./components/button.js";
 export { GxButtonGroup } from "./components/button-group.js";
