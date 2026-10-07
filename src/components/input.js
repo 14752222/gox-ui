@@ -1,25 +1,35 @@
 // GxInput —— Element Plus 风格输入框
 //
 // 在内核 input 之上叠加:
-//   size        large | default | small (高度 40 / 32 / 24)
-//   clearable   有值时尾部出现清空叉
+//   size        large | default | small (触控档自动升至 ≥44 命中高)
+//   clearable   有值时尾部出现清空叉 (触控档命中区自动补足 44)
 //   prefixIcon / suffixIcon   图标名 (内置 icon 集)
 //   status      error | warning (校验态边框色)
 //   model       model 指令 (signal 或 [get, set] 二元组)
-//   block       撑满父容器宽 (缺省 240 固定宽)
+//   block       撑满父容器宽 (缺省 240 固定宽; compact 断点强制 100%)
+//   touch       显式指定触控/鼠标档 (缺省按设备判定)
 //
-// 内核 input 自带: 白底、1px 灰边、获焦转强调色边、光标、悬停底色。
-// 我们只叠图标与清空叉, 不动字段本体 (它的 hover/focus 反馈是内核画的)。
+// 多端: 手机竖屏 (compact 断点) 输入框强制 100% 宽 —— 窄屏里 240 定宽
+// 输入框跟相邻标签挤在一行是典型的桌面思维残留。
+// 内核 input 自带: 白底、灰边、获焦转强调色、光标、键盘弹出。
 
 import { h } from "gx/gfx";
 import { palette, space, sizeOf } from "../theme.js";
 import { flattenChildren, resolveVal } from "../utils.js";
+import { isTouch, controlFor, isCompact, hitSlopPad } from "../adaptive.js";
+
+const sizeFor = (p) => {
+  const forceTouch = p && p.touch !== undefined ? !!p.touch : undefined;
+  return controlFor(p && p.size, { forceTouch }) || sizeOf(p && p.size);
+};
 
 export function GxInput(props) {
   const p = props || {};
   const c = palette();
-  const size = sizeOf(p.size);
-  const width = p.width !== undefined ? p.width : (p.block ? "100%" : 240);
+  const size = sizeFor(p);
+  // compact 断点 (手机竖屏/分屏窄窗) 强制满宽
+  const width = p.width !== undefined ? p.width
+    : (p.block || isCompact() ? "100%" : 240);
 
   const inputProps = {
     height: size.h,
@@ -48,13 +58,17 @@ export function GxInput(props) {
   if (p.clearable) {
     const current = resolveVal(p.value !== undefined ? p.value : (Array.isArray(p.model) ? p.model[0] : p.model));
     if (current) {
-      kids.push(h("icon", {
-        name: "close", size: size.icon - 2, color: c.textPlaceholder,
+      // 触控档: 清空叉视觉 18, 命中补足到 44 (透明 padding)
+      const iconSz = isTouch() ? 18 : size.icon - 2;
+      const slop = hitSlopPad(44, iconSz + 8);
+      kids.push(h("row", {
+        alignItems: "center", justifyContent: "center",
+        padding: slop, radius: slop > 0 ? 22 : 0,
         onClick: () => {
           if (p.onInput) p.onInput({ value: "" });
           else if (Array.isArray(p.model)) p.model[1]("");
         },
-      }));
+      }, h("icon", { name: "close", size: iconSz, color: c.textPlaceholder })));
     }
   }
   if (p.suffixIcon) kids.push(h("icon", { name: p.suffixIcon, size: size.icon, color: c.textPlaceholder }));
