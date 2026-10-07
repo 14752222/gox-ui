@@ -1,6 +1,6 @@
 {
   "name": "gox-ui",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Element Plus 风格的 Gox 桌面 GUI 组件库 — 基于 gx/gfx 渲染内核的纯 ESM 函数组件库",
   "type": "module",
   "main": "src/index.js",
