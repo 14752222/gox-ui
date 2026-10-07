@@ -9,6 +9,10 @@
 
 ![showcase](docs/showcase-light.png)
 
+**移动端形态**（同一套代码，触控档自动切换）：
+
+![showcase-mobile](docs/showcase-mobile.png)
+
 </div>
 
 ---
@@ -22,8 +26,45 @@ Gox 内核提供了 40+ 内置元素（`button` / `input` / `table` / `dialog` .
   `plain` / `round` / `text` / `loading`，从 Vue 生态迁移零学习成本
 - **Element Plus 配色**：品牌蓝 `#409EFF` 与全套功能色、中性色阶，亮暗双主题自动切换
 - **设计令牌驱动**：间距 / 圆角 / 字号 / 控件尺寸 / 阴影全部走统一梯度表，换皮只改一处
+- **跨端自适应**：桌面 / 移动（Android · iOS · 鸿蒙）同一份代码，触控与鼠标档自动切换
 - **复合组件**：Form / Steps / Timeline / Descriptions / Collapse / Breadcrumb / Result / Message
   这些"多原子组合"的组件，内核不提供，GoxUI 补齐
+
+## 多端适配
+
+GoxUI 不是 Web 库——它跑在 Gox 的原生渲染内核上，桌面（Windows / macOS / Linux）与
+移动（Android / iOS / 鸿蒙）同一份代码。端差异收敛在 `src/adaptive.js` 一层：
+
+| 差异点 | 桌面（鼠标档） | 移动（触控档） |
+|---|---|---|
+| 控件高度 | 40 / 32 / 24 | 52 / **44** / 44（命中区下限 44，WCAG 2.5.5） |
+| 字号 | 11–26 梯度 | 触控档整体 +1~2 |
+| Dialog | 居中卡片 + 遮罩 | **底部动作面板**（BottomSheet：贴底、顶圆角、拖拽指示条、按钮纵向满宽） |
+| Steps | 横向 | compact 断点（<600dp）自动转**纵向** |
+| CheckboxGroup | 横向换行 | **纵向整行**（拇指扫列更好按） |
+| Tooltip | hover 提示 | 触屏不渲染（信息走 label/描述） |
+| 输入框 | 定宽 240 | compact 断点强制满宽 |
+| 点击反馈 | 视觉态 | 视觉态 + **轻震动**（`vibrate`，内核软降级） |
+
+判定来源：`gx/device`（platform / isMobile / isTablet）+ `gx/viewport`（widthClass
+三档断点 / safeArea / keyboardVisible）。断点与安全区跟随内核口径（compact <600dp ·
+medium 600–840 · expanded >840），窗口 resize / 折叠屏展开时自动重算。
+
+```js
+// 应用层可直接用
+import { adaptive, safeArea, isCompact } from "gox-ui";
+
+const a = adaptive();   // { touch, compact, medium, expanded, platform, ... }
+
+// 安全区: 刘海/手势条/键盘
+<column {...safeArea(true)}>...</column>
+
+// 强制指定档位 (带触屏的桌面设备 / 模拟器调试)
+import { setPointerOverride } from "gox-ui";
+setPointerOverride(true);   // 切到触控档
+```
+
+桌面开发期可跑移动端模拟：`gox demo/showcase-mobile.js`（400×720 小窗 + 触控档强制开启）。
 
 ## 设计规范
 
@@ -162,9 +203,11 @@ setTheme({ accent: "#e67e22" });  // 内核层强调色
 ```bash
 git clone https://github.com/14752222/gox-ui
 cd gox-ui
-gox demo/showcase.js       # 打开组件全家福
-gox test/smoke.js          # 67 项冒烟测试
-python test/shot_verify.py out.png   # 截图 + 六项像素/几何断言 (Windows)
+gox demo/showcase.js            # 桌面全家福
+gox demo/showcase-mobile.js     # 移动端形态模拟 (400×720 + 触控档)
+gox test/smoke.js               # 78 项冒烟测试 (含多端用例)
+python test/shot_verify.py docs/showcase-light.png       # 桌面截图 + 六项断言
+python test/shot_mobile_verify.py                        # 移动模拟截图 + 四项断言
 ```
 
 项目结构：
@@ -173,17 +216,21 @@ python test/shot_verify.py out.png   # 截图 + 六项像素/几何断言 (Windo
 src/
   index.js            # 聚合入口
   theme.js            # 设计令牌 (色板/间距/圆角/字号/控件/阴影, 亮暗判定)
+  adaptive.js         # 多端自适应 (设备形态/断点/触控尺寸表/交互开关)
   styles.js           # 样式构造层 (panel/box/pad/txt/hline — 统一的容器出口)
   utils.js            # mergeProps / flattenChildren / resolveVal / pickValue
   components/
     button.js  input.js  card.js  ...   # 每组件一文件
 demo/
-  showcase.js         # 全组件演示 (hero + 四分区文档页版式)
+  showcase.js         # 桌面全组件演示
+  showcase-mobile.js  # 移动端形态模拟
 test/
   smoke.js            # 组件树构造冒烟 (gox test/smoke.js)
-  shot_verify.py      # PrintWindow 截图 + 像素/几何断言
+  shot_verify.py      # 桌面截图 + 像素/几何断言
+  shot_mobile_verify.py  # 移动模拟截图断言
 docs/
-  showcase-light.png  # 截图
+  showcase-light.png  # 桌面截图
+  showcase-mobile.png # 移动端形态截图
 ```
 
 ## 已知问题
