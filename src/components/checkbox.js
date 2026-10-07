@@ -10,6 +10,7 @@ import { h } from "gx/gfx";
 import { palette, space } from "../theme.js";
 import { txt } from "../styles.js";
 import { resolveVal } from "../utils.js";
+import { isTouch } from "../adaptive.js";
 
 export function GxCheckbox(props) {
   const p = props || {};
@@ -38,19 +39,25 @@ export function GxCheckboxGroup(props) {
   const c = palette();
   const options = p.options || [];
   const selected = resolveVal(p.value) || [];
+  const touch = isTouch();
 
-  return h("row", {
-    gap: p.gap !== undefined ? p.gap : space.xl,
-    alignItems: "center",
-    wrap: p.wrap !== undefined ? p.wrap : true,
+  // 触控档: 选项间距与行高加大 (整行命中), 纵向排 (拇指扫过一列
+  // 比横排拐行好按); 鼠标档横向省空间。
+  const wrap = touch ? false : (p.wrap !== undefined ? p.wrap : true);
+
+  return h(touch ? "column" : "row", {
+    gap: touch ? space.lg : (p.gap !== undefined ? p.gap : space.xl),
+    alignItems: touch ? "stretch" : "center",
+    wrap: wrap,
   },
     ...options.map((opt) => {
       const val = typeof opt === "string" ? opt : opt.value;
       const label = typeof opt === "string" ? opt : opt.label;
       const on = selected.indexOf(val) >= 0;
       return h("row", {
-        gap: space.sm,
+        gap: space.md,
         alignItems: "center",
+        padding: touch ? 8 : 0,
         onClick: p.disabled ? undefined : () => {
           if (!p.onChange) return;
           const next = on ? selected.filter((x) => x !== val) : selected.concat([val]);
@@ -58,6 +65,9 @@ export function GxCheckboxGroup(props) {
         },
       },
         h("checkbox", { checked: on, disabled: p.disabled }),
-        txt(c, { size: "base", color: p.disabled ? c.textDisabled : c.textRegular }, label));
+        txt(c, {
+          size: touch ? 15 : "base",
+          color: p.disabled ? c.textDisabled : c.textRegular,
+        }, label));
     }));
 }
