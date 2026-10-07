@@ -15,6 +15,7 @@ import { h } from "gx/gfx";
 import { palette, toneOf, space, radius as radiusScale } from "../theme.js";
 import { panel, pad } from "../styles.js";
 import { flattenChildren } from "../utils.js";
+import { isTouch } from "../adaptive.js";
 
 export function GxTag(props, ...children) {
   const p = props || {};
@@ -22,10 +23,19 @@ export function GxTag(props, ...children) {
   const type = p.type || "";
   const tone = toneOf(c, type);
   const hasTone = type !== "" && type !== undefined;
+  const touch = isTouch();
 
-  const font = { large: 13, default: 12, small: 11 }[p.size || "default"];
-  const padX = { large: 10, default: 9, small: 7 }[p.size || "default"];
-  const hgt = { large: 28, default: 24, small: 20 }[p.size || "default"];
+  // 触控档: 高度与字号升档 (closable 时命中区要够)
+  const sizeKey = p.size || "default";
+  const font = touch
+    ? { large: 15, default: 14, small: 13 }[sizeKey]
+    : { large: 13, default: 12, small: 11 }[sizeKey];
+  const padX = touch
+    ? { large: 14, default: 12, small: 10 }[sizeKey]
+    : { large: 10, default: 9, small: 7 }[sizeKey];
+  const hgt = touch
+    ? { large: 36, default: 32, small: 28 }[sizeKey]
+    : { large: 28, default: 24, small: 20 }[sizeKey];
 
   let background, border, color;
   if (p.effect === "dark") {
@@ -51,10 +61,19 @@ export function GxTag(props, ...children) {
       : ch);
   }
   if (p.closable) {
-    kids.push(h("icon", {
-      name: "close", size: 10, color: color,
+    // 触控档: 关闭叉外包一层命中区 (视觉小, 命中够)
+    const iconSz = touch ? 14 : 10;
+    const closeIcon = h("icon", {
+      name: "close", size: iconSz, color: color,
       onClick: (e) => { if (p.onClose) p.onClose(e); },
-    }));
+    });
+    kids.push(touch
+      ? panel(c, {
+          direction: "row", alignItems: "center", justifyContent: "center",
+          width: 32, height: 32, radius: 16,
+          extra: { onClick: (e) => { if (p.onClose) p.onClose(e); } },
+        }, [closeIcon])
+      : closeIcon);
   }
 
   return panel(c, {
