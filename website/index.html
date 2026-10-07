@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>gox-ui 组件文档 — Element Plus 风格的 Gox 跨端组件库</title>
+<style>
+  :root {
+    --primary: #409eff;
+    --primary-dark: #337ecc;
+    --primary-light: #ecf5ff;
+    --success: #67c23a; --warning: #e6a23c; --danger: #f56c6c; --info: #909399;
+    --text-1: #303133; --text-2: #606266; --text-3: #909399;
+    --border: #dcdfe6; --border-light: #e4e7ed; --border-lighter: #ebeef5;
+    --fill: #f0f2f5; --bg: #ffffff; --bg-page: #f5f7fa;
+    --green-t: #f0f9eb; --blue-t: #ecf5ff; --orange-t: #fdf6ec; --red-t: #fef0f0; --gray-t: #f4f4f5;
+    --code-bg: #1a2332;
+    --mono: 'JetBrains Mono', Consolas, 'Courier New', monospace;
+    --sidebar-w: 260px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior:smooth; scroll-padding-top: 80px; }
+  body {
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;
+    color:var(--text-1); background:var(--bg); line-height:1.65; font-size:14px;
+  }
+  a { color:var(--primary); text-decoration:none; }
+
+  /* ── 顶栏 ── */
+  .topbar {
+    position:fixed; top:0; left:0; right:0; height:60px; z-index:200;
+    background:#fff; border-bottom:1px solid var(--border-lighter);
+    display:flex; align-items:center; padding:0 24px; gap:24px;
+  }
+  .brand { display:flex; align-items:center; gap:10px; font-weight:700; font-size:17px; color:var(--text-1); }
+  .brand .mark {
+    width:30px;height:30px;border-radius:7px;color:#fff;font-size:13px;font-weight:700;
+    background:linear-gradient(135deg,#409eff,#79bbff);
+    display:flex;align-items:center;justify-content:center;
+  }
+  .brand .ver { font-size:11px; font-weight:500; color:var(--primary); background:var(--primary-light); padding:2px 8px; border-radius:4px; }
+  .topbar .spacer { flex:1; }
+  .topbar .links { display:flex; gap:20px; font-size:13.5px; }
+  .topbar .links a { color:var(--text-2); }
+  .topbar .links a:hover { color:var(--primary); }
+
+  /* ── 布布 ── */
+  .layout { display:flex; padding-top:60px; min-height:100vh; }
+
+  /* ── 侧栏 ── */
+  .sidebar {
+    width:var(--sidebar-w); position:fixed; top:60px; bottom:0; left:0;
+    overflow-y:auto; border-right:1px solid var(--border-lighter);
+    background:#fff; padding:20px 0 40px;
+  }
+  .sidebar::-webkit-scrollbar { width:4px; } .sidebar::-webkit-scrollbar-thumb { background:var(--border-light); border-radius:2px; }
+  .side-group { margin-bottom:6px; }
+  .side-group>.gt {
+    font-size:12px; color:var(--text-3); padding:14px 24px 6px; font-weight:600;
+    display:flex; justify-content:space-between; cursor:pointer; user-select:none;
+  }
+  .side-group>.gt:hover { color:var(--text-1); }
+  .side-item {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:8px 24px 8px 34px; font-size:13.5px; color:var(--text-2); cursor:pointer;
+    border-left:3px solid transparent; transition:all .12s;
+  }
+  .side-item:hover { color:var(--primary); }
+  .side-item.on { color:var(--primary); border-left-color:var(--primary); background:var(--primary-light); font-weight:600; }
+  .side-item .en { font-size:11px; color:var(--text-3); }
+  .side-item.on .en { color:var(--primary); opacity:.75; }
+
+  /* ── 主区 ── */
+  .main { flex:1; margin-left:var(--sidebar-w); padding:32px 48px 100px; max-width:1000px; }
+  @media (max-width:900px){ .sidebar{display:none;} .main{margin-left:0;padding:24px 20px 80px;} }
+
+  /* ── 组件章节 ── */
+  .comp-sec { margin-bottom:64px; scroll-margin-top:76px; }
+  .comp-sec>.head { display:flex; align-items:baseline; gap:12px; border-bottom:1px solid var(--border-lighter); padding-bottom:14px; margin-bottom:8px; }
+  .comp-sec>.head h2 { font-size:24px; font-weight:650; }
+  .comp-sec>.head .en { color:var(--text-3); font-size:15px; }
+  .comp-sec>.desc { color:var(--text-2); font-size:13.5px; padding:12px 0 4px; }
+  .comp-sec>.desc code { background:var(--gray-t); padding:1px 6px; border-radius:3px; font-family:var(--mono); font-size:12px; color:#476582; }
+
+  /* ── demo 块 ── */
+  .demo { border:1px solid var(--border-lighter); border-radius:6px; margin:14px 0 18px; overflow:hidden; }
+  .demo .preview { padding:24px; background:#fff; display:flex; flex-wrap:wrap; gap:12px; align-items:center; }
+  .demo .code-bar {
+    display:flex; justify-content:space-between; align-items:center;
+    border-top:1px solid var(--border-lighter); background:#fafbfc;
+    padding:0 16px; height:40px; user-select:none;
+  }
+  .demo .code-bar .lbl { font-size:12px; color:var(--text-3); }
+  .demo .code-bar .toggle {
+    font-size:12px; color:var(--primary); cursor:pointer; display:flex; align-items:center; gap:4px;
+  }
+  .demo .code-bar .toggle:hover { color:var(--primary-dark); }
+  .demo pre.code {
+    display:none; margin:0; padding:16px 20px; background:var(--code-bg); color:#dce3ed;
+    font-family:var(--mono); font-size:12.5px; line-height:1.7; overflow-x:auto;
+    border-top:1px solid var(--border-lighter);
+  }
+  .demo.open pre.code { display:block; }
+  .kw{color:#c792ea;} .st{color:#c3e88d;} .fn{color:#82aaff;} .cm{color:#5c6a80;font-style:italic;} .tg{color:#f07178;} .nm{color:#f78c6c;}
+
+  /* ── 模拟组件渲染 (官网内静态复刻 gox-ui 观感) ── */
+  .b {
+    display:inline-flex; align-items:center; justify-content:center; gap:6px;
+    height:32px; padding:0 15px; border-radius:6px; font-size:14px;
+    border:1px solid var(--border); background:#fff; color:var(--text-1);
+    cursor:pointer; transition:all .15s; white-space:nowrap;
+  }
+  .b:hover { background:var(--primary-light); border-color:var(--primary-light); color:var(--primary); }
+  .b.primary { background:var(--primary); border-color:var(--primary); color:#fff; }
+  .b.primary:hover { background:var(--primary-dark); }
+  .b.success { background:var(--success); border-color:var(--success); color:#fff; }
+  .b.warning { background:var(--warning); border-color:var(--warning); color:#fff; }
+  .b.danger  { background:var(--danger);  border-color:var(--danger);  color:#fff; }
+  .b.info    { background:var(--info);    border-color:var(--info);    color:#fff; }
+  .b.plain.p { background:var(--primary-light); color:var(--primary); border-color:var(--primary-light); }
+  .b.plain.s { background:var(--green-t); color:var(--success); border-color:var(--green-t); }
+  .b.text { border-color:transparent; background:transparent; color:var(--primary); padding:0 8px; }
+  .b.text:hover { background:var(--primary-light); }
+  .b.disabled { opacity:.55; pointer-events:none; }
+  .b.sm { height:24px; padding:0 10px; font-size:12px; }
+  .b.lg { height:40px; padding:0 20px; font-size:14px; }
+  .b.round { border-radius:999px; }
+
+  .tag {
+    display:inline-flex; align-items:center; height:24px; padding:0 9px;
+    border-radius:4px; font-size:12px; white-space:nowrap;
+  }
+  .tag.round { border-radius:999px; }
+  .tag.p { background:var(--primary-light); color:var(--primary); }
+  .tag.s { background:var(--green-t); color:var(--success); }
+  .tag.w { background:var(--orange-t); color:var(--warning); }
+  .tag.d { background:var(--red-t); color:var(--danger); }
+  .tag.i { background:var(--gray-t); color:var(--info); }
+  .tag.dark { background:var(--primary); color:#fff; }
+
+  .inp {
+    display:inline-flex; align-items:center; height:32px; width:220px;
+    border:1px solid var(--border); border-radius:6px; padding:0 11px;
+    font-size:13px; color:var(--text-1); background:#fff;
+  }
+  .inp:focus { outline:none; border-color:var(--primary); }
+  .inp::placeholder { color:#a8abb2; }
+  .inp .cl { margin-left:auto; color:var(--text-3); cursor:pointer; font-style:normal; }
+
+  .alert {
+    display:flex; gap:10px; padding:11px 14px; border-radius:6px; font-size:13px; width:100%;
+  }
+  .alert .ic { font-weight:700; }
+  .alert.s { background:var(--green-t); color:var(--text-1); } .alert.s .ic { color:var(--success); }
+  .alert.w { background:var(--orange-t); } .alert.w .ic { color:var(--warning); }
+  .alert.d { background:var(--red-t); } .alert.d .ic { color:var(--danger); }
+  .alert.i { background:var(--gray-t); } .alert.i .ic { color:var(--info); }
+  .alert b { display:block; font-size:13px; }
+  .alert span { color:var(--text-2); font-size:12.5px; }
+
+  .prog { width:100%; }
+  .prog .track { height:6px; background:var(--fill); border-radius:3px; overflow:hidden; }
+  .prog .bar { height:100%; background:var(--primary); border-radius:3px; }
+  .prog .lbl { font-size:12px; color:var(--primary); margin-top:4px; }
+
+  .switch { width:36px; height:20px; border-radius:10px; background:var(--border); position:relative; cursor:pointer; transition:background .2s; }
+  .switch.on { background:var(--primary); }
+  .switch i { position:absolute; top:2px; left:2px; width:16px; height:16px; border-radius:50%; background:#fff; transition:left .2s; }
+  .switch.on i { left:18px; }
+
+  .avatar {
+    width:40px; height:40px; border-radius:50%; background:var(--primary); color:#fff;
+    display:inline-flex; align-items:center; justify-content:center; font-size:16px; font-weight:600;
+  }
+  .avatar.sq { border-radius:6px; }
+
+  .steps { display:flex; align-items:center; width:100%; gap:0; }
+  .step { display:flex; flex-direction:column; align-items:center; gap:6px; flex:0 0 auto; }
+  .step .dot {
+    width:24px; height:24px; border-radius:50%; background:var(--fill); color:var(--text-3);
+    display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:600;
+  }
+  .step.done .dot, .step.cur .dot { background:var(--primary); color:#fff; }
+  .step .t { font-size:12px; color:var(--text-2); } .step.cur .t { color:var(--primary); font-weight:600; }
+  .step-line { flex:1; height:2px; background:var(--border-lighter); margin:0 8px 20px; }
+  .step-line.done { background:var(--primary); }
+
+  .badge-count { position:relative; display:inline-block; padding:6px 10px; }
+  .badge-count .bdg {
+    position:absolute; top:-2px; right:-6px; min-width:16px; height:16px; border-radius:8px;
+    background:var(--danger); color:#fff; font-size:10px; display:flex; align-items:center; justify-content:center; padding:0 4px;
+  }
+
+  /* ── props 表 ── */
+  .props { border:1px solid var(--border-lighter); border-radius:6px; overflow:hidden; margin-top:8px; }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th { background:#fafbfc; text-align:left; font-weight:600; color:var(--text-2); padding:10px 14px; border-bottom:1px solid var(--border-lighter); font-size:12.5px; }
+  td { padding:10px 14px; border-bottom:1px solid var(--border-lighter); vertical-align:top; }
+  tr:last-child td { border-bottom:none; }
+  tr:hover td { background:#fafcff; }
+  td code { background:var(--gray-t); padding:1px 6px; border-radius:3px; font-family:var(--mono); font-size:12px; color:#476582; }
+
+  /* ── 双端对照 (顶部总览) ── */
+  .duo { display:grid; grid-template-columns:1.6fr 1fr; gap:20px; margin:16px 0 8px; }
+  @media (max-width:860px){ .duo{grid-template-columns:1fr;} }
+  .shot { border:1px solid var(--border-lighter); border-radius:8px; overflow:hidden; background:var(--bg-page); }
+  .shot .f { padding:18px; display:flex; justify-content:center; }
+  .shot.mobile .f { padding:32px 52px; }
+  .shot img { width:100%; border-radius:5px; box-shadow:0 8px 28px rgba(0,0,0,.14); border:1px solid rgba(0,0,0,.07); display:block; }
+  .shot .c { padding:10px 16px; border-top:1px solid var(--border-lighter); font-size:12.5px; color:var(--text-2); background:#fff; display:flex; gap:8px; align-items:center; }
+  .pill { font-size:10.5px; padding:2px 8px; border-radius:4px; font-weight:600; }
+  .pill.pc { background:var(--primary-light); color:var(--primary-dark); }
+  .pill.mb { background:var(--green-t); color:#529b2e; }
+
+  /* ── 总览 hero ── */
+  .hero-sec { padding:8px 0 10px; }
+  .hero-sec h1 { font-size:30px; margin-bottom:10px; }
+  .hero-sec h1 em { font-style:normal; color:var(--primary); }
+  .hero-sec p { color:var(--text-2); font-size:14px; max-width:640px; margin-bottom:8px; }
+  .install-line {
+    margin-top:16px; background:var(--code-bg); color:#dce3ed; border-radius:8px;
+    padding:14px 18px; font-family:var(--mono); font-size:13px; display:flex; align-items:center; gap:12px;
+  }
+  .install-line .cp { margin-left:auto; color:#8b95a5; cursor:pointer; font-size:12px; }
+  .install-line .cp:hover { color:#fff; }
+</style>
+</head>
+<body>
+
+<!-- ═══ 顶栏 ═══ -->
+<div class="topbar">
+  <div class="brand"><span class="mark">Gx</span> gox-ui <span class="ver">v0.3.0</span></div>
+  <div class="spacer"></div>
+  <div class="links">
+    <a href="https://github.com/14752222/gox-ui" target="_blank">GitHub</a>
+    <a href="https://www.npmjs.com/package/gox-ui" target="_blank">npm</a>
+  </div>
+</div>
+
+<div class="layout">
+<!-- ═══ 侧栏 ═══ -->
+<nav class="sidebar" id="sidebar">
+  <div class="side-group"><div class="gt">指南</div>
+    <a class="side-item" data-id="intro">开始使用 <span class="en">Guide</span></a>
+  </div>
+  <div class="side-group"><div class="gt">基础组件</div>
+    <a class="side-item" data-id="button">按钮 <span class="en">Button</span></a>
+    <a class="side-item" data-id="input">输入框 <span class="en">Input</span></a>
+    <a class="side-item" data-id="tag">标签 <span class="en">Tag</span></a>
+    <a class="side-item" data-id="switch">开关 <span class="en">Switch</span></a>
+    <a class="side-item" data-id="avatar">头像 <span class="en">Avatar</span></a>
+  </div>
+  <div class="side-group"><div class="gt">表单组件</div>
+    <a class="side-item" data-id="checkbox">多选框 <span class="en">Checkbox</span></a>
+    <a class="side-item" data-id="form">表单 <span class="en">Form</span></a>
+  </div>
+  <div class="side-group"><div class="gt">数据展示</div>
+    <a class="side-item" data-id="steps">步骤条 <span class="en">Steps</span></a>
+    <a class="side-item" data-id="timeline">时间线 <span class="en">Timeline</span></a>
+    <a class="side-item" data-id="progress">进度条 <span class="en">Progress</span></a>
+  </div>
+  <div class="side-group"><div class="gt">反馈组件</div>
+    <a class="side-item" data-id="alert">警告提示 <span class="en">Alert</span></a>
+    <a class="side-item" data-id="dialog">对话框 <span class="en">Dialog</span></a>
+    <a class="side-item" data-id="message">消息提示 <span class="en">Message</span></a>
+  </div>
+  <div class="side-group"><div class="gt">多端适配</div>
+    <a class="side-item" data-id="adaptive">自适应 <span class="en">Adaptive</span></a>
+  </div>
+</nav>
+
+<!-- ═══ 主区 ═══ -->
+<main class="main">
+
+<!-- ──────── 开始使用 ──────── -->
+<section class="comp-sec" id="intro">
+  <div class="head"><h2>开始使用</h2><span class="en">Guide</span></div>
+  <p class="desc">
+    gox-ui 是 Element Plus 风格的 Gox 原生 GUI 组件库 —— 跑在 Gox gfx 渲染内核上（不是 WebView），
+    桌面（Windows / macOS / Linux）与移动（Android / iOS / 鸿蒙）同一份代码。
+    组件细节的多端差异（触控命中、断点、安全区）由 <code>adaptive.js</code> 自动处理。
+  </p>
+  <div class="duo">
+    <div class="shot">
+      <div class="f"><img src="docs/showcase-light.png" alt="桌面端"></div>
+      <div class="c"><span class="pill pc">桌面</span> Windows 980×820 · 居中弹窗 / 横向步骤 / hover 提示</div>
+    </div>
+    <div class="shot mobile">
+      <div class="f"><img src="docs/showcase-mobile.png" alt="移动端"></div>
+      <div class="c"><span class="pill mb">移动</span> 触控档 400×720 · 底部面板 / 纵向步骤 / ≥44px 命中</div>
+    </div>
+  </div>
+  <div class="install-line" id="inst">
+    <span style="color:#8b95a5">$</span> npm install gox-ui
+    <span class="cp" onclick="navigator.clipboard.writeText('npm install gox-ui');this.textContent='已复制'">复制</span>
+  </div>
+  <div class="demo">
+    <div class="preview" style="display:block;">
+      <div style="font-size:13px;color:var(--text-3);margin-bottom:8px;">app.jsx — 一个最小的完整应用：</div>
+<div style="background:var(--code-bg);border-radius:6px;padding:14px 18px;font-family:var(--mono);font-size:12.5px;line-height:1.7;color:#dce3ed;overflow-x:auto;">
+<span class="kw">import</span> { h, render } <span class="kw">from</span> <span class="st">"gx/gfx"</span>;<br>
+<span class="kw">import</span> { createSignal } <span class="kw">from</span> <span class="st">"gx/solid"</span>;<br>
+<span class="kw">import</span> { GxButton, GxInput, GxCard, GxMessage, GxMessageHost } <span class="kw">from</span> <span class="st">"gox-ui"</span>;<br><br>
+<span class="kw">const</span> [name, setName] = <span class="fn">createSignal</span>(<span class="st">""</span>);<br><br>
+<span class="fn">render</span>(<br>
+&nbsp;&nbsp;&lt;<span class="tg">window</span> title=<span class="st">"Hello"</span> width={<span class="nm">420</span>} height={<span class="nm">280</span>}&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;<span class="tg">column</span> gap={<span class="nm">16</span>} padding={<span class="nm">24</span>} font={<span class="nm">14</span>}&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;<span class="tg">GxCard</span> header=<span class="st">"问候"</span>&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;<span class="tg">GxInput</span> placeholder=<span class="st">"你的名字"</span> model={name} clearable /&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;<span class="tg">GxButton</span> type=<span class="st">"primary"</span> onClick={() =&gt; GxMessage.success(<span class="st">`你好, ${name()}!`</span>)}&gt;打招呼&lt;/<span class="tg">GxButton</span>&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/<span class="tg">GxCard</span>&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;<span class="tg">GxMessageHost</span> /&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;/<span class="tg">column</span>&gt;<br>
+&nbsp;&nbsp;&lt;/<span class="tg">window</span>&gt;<br>
+);</div>
+    </div>
+  </div>
+</section>
+
+<!-- ──────── Button ──────── -->
+<section class="comp-sec" id="button">
+  <div class="head"><h2>按钮</h2><span class="en">GxButton</span></div>
+  <p class="desc">内核 <code>button</code> 提供点击 / 悬停提亮 / 按压压暗 / 禁用降饱和；GoxUI 叠加 Element 同款语义。触控档高度自动升至 ≥44px，点击附带轻震动（可关）。</p>
+
+  <div class="demo">
+    <div class="preview">
+      <span class="b">Default</span>
+      <span class="b primary">Primary</span>
+      <span class="b success">Success</span>
+      <span class="b warning">Warning</span>
+      <span class="b danger">Danger</span>
+      <span class="b info">Info</span>
+    </div>
+    <div class="code-bar"><span class="lbl">五种语义色 + 缺省中性</span><span class="toggle" onclick="tg(this)">▾ 显示代码</span></div>
+    <pre class="code">&lt;<span class="tg">GxButton</span>&gt;Default&lt;/<span class="tg">GxButton</span>&gt;
+&lt;<span class="tg">GxButton</span> type=<span class="st">"primary"</span>&gt;Primary&lt;/<span class="tg">GxButton</span>&gt;
+&lt;<span class="tg">GxButton</span> type=<span class="st">"success"</span>&gt;Success&lt;/<span class="tg">GxButton</span>&gt;
+&lt;<span class="tg">GxButton</span> type=<span class="st">"warning"</span>&gt;Warning&lt;/<span class="tg">GxButton</span>&gt;
+&lt;<span class="tg">GxButton</span> type=<span class="st">"danger"</span>&gt;Danger&lt;/<span class="tg">GxButton</span>&gt;
+&lt;<span class="tg">GxButton</span> type=<span class="st">"info"</span>&gt;Info&lt;/<span class="tg">GxButton</span>&gt;</pre>
+  </div>
+
+  <div class="demo">
+    <div class="preview">
+      <span class="b plain p">Plain</span>
+      <span class="b plain s">Plain</span>
+      <span class="b round primary">Round</span>
+      <span class="b primary disabled">Disabled</span>
+      <span class="b text">Text 按钮</span>
+      <span class="b primary">◍ loading</span>
+    </div>
+    <div class="code-bar"><span class="lbl">plain / round / disabled / text / loading</span><span class="toggle" onclick="tg(this)">▾ 显示代码</span></div>
+    <pre class="code">&lt;<span class="tg">GxButton</span> plain type=<span class="st">"primary"</span>&gt;Plain&lt;/<span class="tg">GxButton</span>&gt;
+&lt;<span class="tg">GxButton</span> round type=<span class="st">"primary"</span>&gt;Round&lt;/<span class="tg">GxButton</span>&gt;
+&lt;<span class="tg">GxButton</span> type=<span class="st">"primary"</span> disabled&gt;Disabled&lt;/<span class="tg">GxButton</span>&gt;
+&lt;<span class="tg">GxButton</span> type=<span class="st">"primary"</span> text&gt;Text&lt;/<span class="tg">GxButton</span>&gt;
+&lt;<span class="tg">GxButton</span> type=<span class="st">"primary"</span> loading&gt;loading&lt;/<span class="tg">GxButton</span>&gt;</pre>
+  </div>
+
+  <div class="demo">
+    <div class="preview">
+      <span class="b lg primary">Large · 40px</span>
+      <span class="b primary">Default · 32px</span>
+      <span class="b sm primary">Small · 24px</span>
+      <span style="color:var(--text-3);font-size:12px;border-left:1px solid var(--border-lighter);padding-left:12px;">触控档: 52 / <b>44</b> / 44px</span>
+    </div>
+    <div class="code-bar"><span class="lbl">三档尺寸（鼠标档 / 触控档）</span><span class="toggle" onclick="tg(this)">▾ 显示代码</span></div>
+    <pre class="code">&lt;<span class="tg">GxButton</span> size=<span class="st">"large"</span> type=<span class="st">"primary"</span>&gt;Large&lt;/<span class="tg">GxButton</span>&gt;
+<span class="cm">// 桌面: 40px 高; 触控档自动 52px</span></pre>
+  </div>
+
+  <div class="props"><table>
+    <thead><tr><th style="width:16%">属性</th><th style="width:22%">说明</th><th style="width:30%">类型</th><th style="width:32%">可选值 / 默认</th></tr></thead>
+    <tbody>
+      <tr><td><code>type</code></td><td>语义色</td><td><code>string</code></td><td><code>primary</code> / <code>success</code> / <code>warning</code> / <code>danger</code> / <code>info</code> / <code>""</code></td></tr>
+      <tr><td><code>size</code></td><td>尺寸档</td><td><code>string</code></td><td><code>large</code> / <code>default</code> / <code>small</code></td></tr>
+      <tr><td><code>plain</code></td><td>朴素按钮</td><td><code>boolean</code></td><td>— / <code>false</code></td></tr>
+      <tr><td><code>round</code> / <code>circle</code></td><td>胶囊 / 正圆</td><td><code>boolean</code></td><td>— / <code>false</code></td></tr>
+      <tr><td><code>text</code> / <code>link</code></td><td>文字 / 链接按钮</td><td><code>boolean</code></td><td>— / <code>false</code></td></tr>
+      <tr><td><code>loading</code></td><td>加载中（自动禁用）</td><td><code>boolean</code></td><td>— / <code>false</code></td></tr>
+      <tr><td><code>icon</code> / <code>iconRight</code></td><td>左右图标名</td><td><code>string</code></td><td>内置 15 个图标</td></tr>
+      <tr><td><code>block</code></td><td>撑满父容器宽</td><td><code>boolean</code></td><td>— / <code>false</code></td></tr>
+      <tr><td><code>touch</code></td><td>强制触控/鼠标档</td><td><code>boolean</code></td><td>缺省按设备判定</td></tr>
+      <tr><td><code>vibrate</code></td><td>触控点击震动</td><td><code>boolean</code></td><td>— / <code>true</code>（触控档）</td></tr>
+      <tr><td><code>onClick</code></td><td>点击回调</td><td><code>(e) => void</code></td><td>—</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- ──────── Input ──────── -->
+<section class="comp-sec" id="input">
+  <div class="head"><h2>输入框</h2><span class="en">GxInput</span></div>
+  <p class="desc">内核 input 自带白底、灰边、获焦转强调色、光标。GoxUI 叠加图标、清空叉与多端行为：<b>compact 断点（手机竖屏）强制满宽</b>，清空叉触控档命中补足 44px。</p>
+
+  <div class="demo">
+    <div class="preview" style="flex-direction:column; align-items:stretch; max-width:420px;">
+      <div class="inp" contenteditable>姓名<span class="cl">✕</span></div>
+      <div class="inp" contenteditable spellcheck="false" style="color:#a8abb2;">请输入城市</div>
+      <div class="inp" style="border-color:var(--danger);">错误内容<span class="cl">✕</span></div>
+      <div class="inp" style="width:100%;">compact 断点自动满宽</div>
+    </div>
+    <div class="code-bar"><span class="lbl">基础 / 占位 / 校验态 / 满宽</span><span class="toggle" onclick="tg(this)">▾ 显示代码</span></div>
+    <pre class="code">&lt;<span class="tg">GxInput</span> model={name} clearable /&gt;
+&lt;<span class="tg">GxInput</span> placeholder=<span class="st">"请输入城市"</span> /&gt;
+&lt;<span class="tg">GxInput</span> status=<span class="st">"error"</span> /&gt;  <span class="cm">// danger 色边框</span>
+<span class="cm">// 手机竖屏 (compact) 自动 width:100%</span></pre>
+  </div>
+
+  <div class="props"><table>
+    <thead><tr><th style="width:16%">属性</th><th style="width:22%">说明</th><th style="width:30%">类型</th><th style="width:32%">可选值 / 默认</th></tr></thead>
+    <tbody>
+      <tr><td><code>v-model → model</code></td><td>受控值（signal）</td><td><code>signal / [get, set]</code></td><td>—</td></tr>
+      <tr><td><code>placeholder</code></td><td>占位文本</td><td><code>string</code></td><td>—</td></tr>
+      <tr><td><code>clearable</code></td><td>清空叉</td><td><code>boolean</code></td><td>— / <code>false</code></td></tr>
+      <tr><td><code>prefixIcon</code> / <code>suffixIcon</code></td><td>前后图标</td><td><code>string</code></td><td>内置图标名</td></tr>
+      <tr><td><code>status</code></td><td>校验态边框</td><td><code>string</code></td><td><code>error</code> / <code>warning</code></td></tr>
+      <tr><td><code>onInput</code></td><td>输入回调</td><td><code>(e) => void</code></td><td><code>e.value</code></td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- ──────── Tag ──────── -->
+<section class="comp-sec" id="tag">
+  <div class="head"><h2>标签</h2><span class="en">GxTag</span></div>
+  <p class="desc">触控档高度 28→32、字号升档；关闭叉外包 32×32 命中区。</p>
+  <div class="demo">
+    <div class="preview">
+      <span class="tag">Default</span>
+      <span class="tag p">Primary</span>
+      <span class="tag s">Success</span>
+      <span class="tag w">Warning</span>
+      <span class="tag d">Danger</span>
+      <span class="tag i">Info</span>
+      <span class="tag dark">Dark</span>
+      <span class="tag p" style="background:transparent;border:1px solid var(--primary);">Plain</span>
+      <span class="tag w round">可关闭 ✕</span>
+    </div>
+    <div class="code-bar"><span class="lbl">light / dark / plain / closable</span><span class="toggle" onclick="tg(this)">▾ 显示代码</span></div>
+    <pre class="code">&lt;<span class="tg">GxTag</span> type=<span class="st">"primary"</span>&gt;Primary&lt;/<span class="tg">GxTag</span>&gt;
+&lt;<span class="tg">GxTag</span> type=<span class="st">"primary"</span> effect=<span class="st">"dark"</span>&gt;Dark&lt;/<span class="tg">GxTag</span>&gt;
+&lt;<span class="tg">GxTag</span> type=<span class="st">"success"</span> effect=<span class="st">"plain"</span>&gt;Plain&lt;/<span class="tg">GxTag</span>&gt;
+&lt;<span class="tg">GxTag</span> closable onClose={<span class="fn">fn</span>}&gt;Closable&lt;/<span class="tg">GxTag</span>&gt;</pre>
+  </div>
+  <div class="props"><table>
+    <thead><tr><th style="width:16%">属性</th><th style="width:22%">说明</th><th style="width:30%">类型</th><th style="width:32%">可选值 / 默认</th></tr></thead>
+    <tbody>
+      <tr><td><code>type</code></td><td>语义色</td><td><code>string</code></td><td>同 Button</td></tr>
+      <tr><td><code>effect</code></td><td>观感</td><td><code>string</code></td><td><code>light</code> / <code>dark</code> / <code>plain</code></td></tr>
+      <tr><td><code>closable</code></td><td>可关闭</td><td><code>boolean</code></td><td>— / <code>false</code></td></tr>
+      <tr><td><code>round</code></td><td>胶囊圆角</td><td><code>boolean</code></td><td>— / <code>true</code></td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- ──────── Switch ──────── -->
+<section class="comp-sec" id="switch">
+  <div class="head"><h2>开关</h2><span class="en">GxSwitch</span></div>
+  <div class="demo">
+    <div class="preview">
+      <span>关闭</span><div class="switch" onclick="this.classList.toggle('on')"><i></i></div>
+      <span>开启</span><div class="switch on" onclick="this.classList.toggle('on')"><i></i></div>
+      <span>禁用</span><div class="switch on" style="opacity:.5;pointer-events:none;"><i></i></div>
+    </div>
+    <div class="code-bar"><span class="lbl">v-model 开关</span><span class="toggle" onclick="tg(this)">▾ 显示代码</span></div>
+    <pre class="code">&lt;<span class="tg">GxSwitch</span> model={agree} /&gt;
+&lt;<span class="tg">GxSwitch</span> model={x} disabled /&gt;</pre>
+  </div>
+</section>
+
+<!-- ──────── Avatar ──────── -->
+<section class="comp-sec" id="avatar">
+  <div class="head"><h2>头像</h2><span class="en">GxAvatar</span></div>
+  <div class="demo">
+    <div class="preview">
+      <span class="avatar">G</span>
+      <span class="avatar" style="background:var(--success)">X</span>
+      <span class="avatar" style="background:var(--warning)">U</span>
+      <span class="avatar sq" style="width:32px;height:32px;font-size:13px;">I</span>
+    </div>
+    <div class="code-bar"><span class="lbl">圆 / 方 / 自定义色</span><span class="toggle" onclick="tg(this)">▾ 显示代码</span></div>
+    <pre class="code">&lt;<span class="tg">GxAvatar</span> name=<span class="st">"G"</span> /&gt;
+&lt;<span class="tg">GxAvatar</span> name=<span class="st">"X"</span> color=<span class="st">"#67c23a"</span> /&gt;
+&lt;<span class="tg">GxAvatar</span> name=<span class="st">"I"</span> round={<span class="nm">false</span>} size={<span class="nm">32</span>} /&gt;</pre>
+  </div>
+</section>
+
+<!-- ──────── Checkbox ──────── -->
+<section class="comp-sec" id="checkbox">
+  <div class="head"><h2>多选框</h2><span class="en">GxCheckbox / GxCheckboxGroup</span></div>
+  <p class="desc"><b>多端行为差异</b>：鼠标档横向换行；触控档自动转<b>纵向整行</b>（每行自带 8px padding），拇指扫列更好按。</p>
+  <div class="demo">
+    <div class="preview" style="gap:18px;">
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;"><input type="checkbox" checked> 编码</label>
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;"><input type="checkbox"> 游戏</label>
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;"><input type="checkbox" checked> 旅行</label>
+      <span style="color:var(--text-3);font-size:12px;border-left:1px solid var(--border-lighter);padding-left:12px;">触控档: 纵向排列</span>
+    </div>
+    <div class="code-bar"><span class="lbl">CheckboxGroup</span><span class="toggle" onclick="tg(this)">▾ 显示代码</span></div>
+    <pre class="code">&lt;<span class="tg">GxCheckboxGroup</span> options={[<span class="st">"编码"</span>, <span class="st">"游戏"</span>, <span class="st">"旅行"</span>]}
+&nbsp;&nbsp;value={() =&gt; hobby()} onChange={(e) =&gt; setHobby(e.value)} /&gt;
+<span class="cm">// 触控档自动纵向; 选项行命中区 44+</span></pre>
+  </div>
+</section>
+
+<!-- ──────── Form ──────── -->
+<section class="comp-sec" id="form">
+  <div class="head"><h2>表单</h2><span class="en">GxForm / GxFormItem</span></div>
+  <p class="desc">回车提交由内核 form 承接，只收带 <code>name</code> 的字段。标签用内核 label（自动红星）。</p>
+  <div class="demo">
+    <div class="preview" style="display:block;max-width:420px;">
+      <div style="display:flex;gap:12px;align-items:center;margin-bottom:14px;">
+        <span style="font-size:13px;color:var(--text-2);width:72px;text-align:right;"><span style="color:var(--danger)">*</span> 用户名</span>
+        <div class="inp" style="flex:1;" contenteditable spellcheck="false" data-ph>回车提交</div>
+      </div>
+      <div style="display:flex;gap:12px;align-items:center;">
+        <span style="font-size:13px;color:var(--text-2);width:72px;text-align:right;">备注</span>
+        <div class="inp" style="flex:1;" contenteditable spellcheck="false">可选</div>
+      </div>
+    </div>
+    <div class="code-bar"><span class="lbl">label 右对齐 + 必填红星</span><span class="toggle" onclick="tg(this)">▾ 显示代码</span></div>
+    <pre class="code">&lt;<span class="tg">GxForm</span> onSubmit={(e) =&gt; GxMessage.success(JSON.stringify(e.values))}&gt;
+&nbsp;&nbsp;&lt;<span class="tg">GxFormItem</span> label=<span class="st">"用户名"</span> required&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;<span class="tg">GxInput</span> name=<span class="st">"username"</span> /&gt;
+&nbsp;&nbsp;&lt;/<span class="tg">GxFormItem</span>&gt;
+&lt;/<span class="tg">GxForm</span>&gt;</pre>
+  </div>
+</section>
+
+<!-- ──────── Steps ──────── -->
+<section class="comp-sec" id="steps">
+  <div class="head"><h2>步骤条</h2><span class="en">GxSteps</span></div>
+  <p class="desc"><b>多端行为差异</b>：横向排列；<b>compact 断点自动转纵向</b>（圆圈左列 + 竖线），触控档圆圈 24→30px。</p>
+  <div class="demo">
+    <div class="preview" style="display:block;">
+      <div class="steps">
+        <div class="step done"><div class="dot">✓</div><div class="t">创建</div></div>
+        <div class="step-line done"></div>
+        <div class="step cur"><div class="dot">2</div><div class="t">开发</div></div>
+        <div class="step-line"></div>
+        <div class="step"><div class="dot">3</div><div class="t">发布</div></div>
+      </div>
+    </div>
+    <div class="code-bar"><span class="lbl">active=1（0-based）</span><span class="toggle" onclick="tg(this)">▾ 显示代码</span></div>
+    <pre class="code">&lt;<span class="tg">GxSteps</span> steps={[{title:<span class="st">"创建"</span>}, {title:<span class="st">"开发"</span>}, {title:<span class="st">"发布"</span>}]}
+&nbsp;&nbsp;active={<span class="nm">1</span>} onChange={(e) =&gt; setStep(e.step)} /&gt;
+<span class="cm">// compact 断点自动 direction="vertical"</span></pre>
+  </div>
+</section>
+
+<!-- ──────── Timeline ──────── -->
+<section class="comp-sec" id="timeline">
+  <div class="head"><h2>时间线</h2><span class="en">GxTimeline</span></div>
+  <div class="demo">
+    <div class="preview" style="display:block;max-width:360px;">
+      <div style="display:flex;gap:14px;margin-bottom:18px;">
+        <div style="display:flex;flex-direction:column;align-items:center;"><div style="width:10px;height:10px;border-radius:50%;background:var(--primary);"></div><div style="width:2px;flex:1;background:var(--border-lighter);margin-top:4px;"></div></div>
+        <div><div style="font-size:12px;color:var(--text-3);">2026-10-06</div><div style="font-size:13px;">创建仓库</div></div>
+      </div>
+      <div style="display:flex;gap:14px;margin-bottom:18px;">
+        <div style="display:flex;flex-direction:column;align-items:center;"><div style="width:10px;height:10px;border-radius:50%;background:var(--success);"></div><div style="width:2px;flex:1;background:var(--border-lighter);margin-top:4px;"></div></div>
+        <div><div style="font-size:12px;color:var(--text-3);">2026-10-06</div><div style="font-size:13px;">基础组件完成</div></div>
+      </div>
+      <div style="display:flex;gap:14px;">
+        <div style="display:flex;flex-direction:column;align-items:center;"><div style="width:10px;height:10px;border-radius:50%;background:#fff;border:2px solid var(--warning);"></div></div>
+        <div><div style="font-size:12px;color:var(--text-3);">待定</div><div style="font-size:13px;">发布 0.3.0（hollow 空心点）</div></div>
+      </div>
+    </div>
+    <div class="code-bar"><span class="lbl">type / hollow / timestamp</span><span class="toggle" onclick="tg(this)">▾ 显示代码</span></div>
+    <pre class="code">&lt;<span class="tg">GxTimeline</span> items={[
+&nbsp;&nbsp;{ content: <span class="st">"创建仓库"</span>, timestamp: <span class="st">"2026-10-06"</span>, type: <span class="st">"primary"</span> },
+&nbsp;&nbsp;{ content: <span class="st">"发布"</span>, type: <span class="st">"warning"</span>, hollow: <span class="nm">true</span> },
+]} /&gt;</pre>
+  </div>
+</section>
+
+<!-- ──────── Progress ──────── -->
+<section class="comp-sec" id="progress">
+  <div class="head"><h2>进度条</h2><span class="en">GxProgress</span></div>
+  <div class="demo">
+    <div class="preview" style="flex-direction:column;align-items:stretch;max-width:420px;">
+      <div class="prog"><div class="track"><div class="bar" style="width:45%"></div></div><div class="lbl">45%</div></div>
+      <div class="prog"><div class="track"><div class="bar" style="width:80%;background:var(--success)"></div></div><div class="lbl" style="color:var(--success)">80% · success</div></div>
+      <div class="prog"><div class="track" style="height:10px;"><div class="bar" style="width:60%;border-radius:5px"></div></div><div class="lbl">60% · strokeWidth=10</div></div>
+    </div>
+    <div class="code-bar"><span class="lbl">percentage / status / strokeWidth</span><span class="toggle" onclick="tg(this)">▾ 显示代码</span></div>
+    <pre class="code">&lt;<span class="tg">GxProgress</span> percentage={() =&gt; progress()} /&gt;
+&lt;<span class="tg">GxProgress</span> percentage={<span class="nm">80</span>} status=<span class="st">"success"</span> /&gt;
+&lt;<span class="tg">GxProgress</span> percentage={<span class="nm">60</span>} strokeWidth={<span class="nm">10</span>} /&gt;</pre>
+  </div>
+</section>
+
+<!-- ──────── Alert ──────── -->
+<section class="comp-sec" id="alert">
+  <div class="head"><h2>警告提示</h2><span class="en">GxAlert</span></div>
+  <p class="desc">三种观感：<code>light</code>（浅底）/ <code>filled</code>（实心）/ <code>outline</code>（白底描边）。description 自动换行，宽度跟随容器而非硬编码。</p>
+  <div class="demo">
+    <div class="preview" style="flex-direction:column;align-items:stretch;">
+      <div class="alert s"><span class="ic">✓</span><div><b>成功创建仓库</b><span>组件库已就绪, 可 npm install gox-ui 安装。</span></div></div>
+      <div class="alert w"><span class="ic">!</span><div><b>注意</b><span>带关闭按钮的警告</span></div><span style="margin-left:auto;cursor:pointer;color:var(--text-3);">✕</span></div>
+      <div class="alert d"><span class="ic">✕</span><div><b>错误示例</b></div></div>
+      <div class="alert i"><span class="ic">i</span><div><b>信息提示</b></div></div>
+    </div>
+    <div class="code-bar"><span class="lbl">success / warning / danger / info · closable</span><span class="toggle" onclick="tg(this)">▾ 显示代码</span></div>
+    <pre class="code">&lt;<span class="tg">GxAlert</span> type=<span class="st">"success"</span> title=<span class="st">"成功"</span> description=<span class="st">"描述自动换行"</span> /&gt;
+&lt;<span class="tg">GxAlert</span> type=<span class="st">"warning"</span> title=<span class="st">"注意"</span> closable onClose={<span class="fn">fn</span>} /&gt;
+&lt;<span class="tg">GxAlert</span> type=<span class="st">"info"</span> tone=<span class="st">"outline"</span> title=<span class="st">"白底描边"</span> /&gt;</pre>
+  </div>
+</section>
+
+<!-- ──────── Dialog ──────── -->
+<section class="comp-sec" id="dialog">
+  <div class="head"><h2>对话框</h2><span class="en">GxDialog</span></div>
+  <p class="desc"><b>多端形态切换是 gox-ui 的招牌</b>：桌面是居中卡片；手机竖屏（触控 + compact）自动变<b>底部动作面板</b> —— 贴底满宽、顶部圆角、拖拽指示条、按钮纵向整行。</p>
+  <div class="demo">
+    <div class="preview" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;width:100%;">
+      <div style="border:1px solid var(--border-lighter);border-radius:8px;padding:18px;background:#f0f2f5;position:relative;height:220px;overflow:hidden;">
+        <div style="position:absolute;inset:0;background:rgba(0,0,0,.35);"></div>
+        <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:75%;background:#fff;border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,.2);padding:16px;">
+          <div style="font-weight:600;font-size:13px;margin-bottom:4px;">确认操作</div>
+          <div style="font-size:11px;color:var(--text-3);margin-bottom:12px;">桌面 · 居中卡片</div>
+          <div style="display:flex;gap:8px;justify-content:flex-end;">
+            <span class="b sm">取消</span><span class="b sm primary">确定</span>
+          </div>
+        </div>
+        <div style="position:absolute;left:10px;top:10px;font-size:10px;color:#fff;background:rgba(0,0,0,.3);padding:2px 8px;border-radius:4px;">桌面 980×820</div>
+      </div>
+      <div style="border:1px solid var(--border-lighter);border-radius:8px;padding:18px 40px;background:#f0f2f5;position:relative;height:220px;overflow:hidden;">
+        <div style="position:absolute;inset:0;background:rgba(0,0,0,.35);"></div>
+        <div style="position:absolute;left:0;right:0;bottom:0;background:#fff;border-radius:14px 14px 0 0;box-shadow:0 -8px 32px rgba(0,0,0,.18);padding:10px 16px 14px;">
+          <div style="width:36px;height:4px;border-radius:2px;background:var(--border);margin:0 auto 10px;"></div>
+          <div style="font-weight:600;font-size:13px;">确认操作</div>
+          <div style="font-size:11px;color:var(--text-3);margin:2px 0 10px;">移动 · 底部动作面板</div>
+          <span class="b primary" style="width:100%;margin-bottom:6px;">确定</span>
+          <span class="b" style="width:100%;">取消</span>
+        </div>
+        <div style="position:absolute;left:10px;top:10px;font-size:10px;color:#fff;background:rgba(0,0,0,.3);padding:2px 8px;border-radius:4px;">移动 400×720</div>
+      </div>
+    </div>
+    <div class="code-bar"><span class="lbl">同一份 JSX，两端自动切换</span><span class="toggle" onclick="tg(this)">▾ 显示代码</span></div>
+    <pre class="code">&lt;<span class="tg">GxDialog</span> title=<span class="st">"确认操作"</span> open={open} onClose={close}
+&nbsp;&nbsp;footer={() =&gt; (
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;<span class="tg">GxButton</span> type=<span class="st">"primary"</span> block&gt;确定&lt;/<span class="tg">GxButton</span>&gt;
+&nbsp;&nbsp;)}&gt;
+&nbsp;&nbsp;同一份代码, 手机上自动变底部面板。
+&lt;/<span class="tg">GxDialog</span>&gt;
+<span class="cm">// behavior="center"|"sheet" 可强制; 点遮罩/Esc 自动关闭</span></pre>
+  </div>
+  <div class="props"><table>
+    <thead><tr><th style="width:16%">属性</th><th style="width:22%">说明</th><th style="width:30%">类型</th><th style="width:32%">可选值 / 默认</th></tr></thead>
+    <tbody>
+      <tr><td><code>behavior</code></td><td>强制形态</td><td><code>string</code></td><td><code>center</code> / <code>sheet</code> · 缺省按设备自动</td></tr>
+      <tr><td><code>footer</code></td><td>底栏内容</td><td><code>() => element</code></td><td>—</td></tr>
+      <tr><td><code>showClose</code></td><td>右上角关闭（center 形态）</td><td><code>boolean</code></td><td>— / <code>true</code></td></tr>
+      <tr><td><code>onClose</code></td><td>关闭回调</td><td><code>(e) => void</code></td><td>遮罩 / Esc / 按钮统一触发</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- ──────── Message ──────── -->
+<section class="comp-sec" id="message">
+  <div class="head"><h2>消息提示</h2><span class="en">GxMessage</span></div>
+  <p class="desc">命令式调用，需在根部挂 <code>&lt;GxMessageHost /&gt;</code>。顶部居中、可堆叠、自动消失（缺省 3s）。</p>
+  <div class="demo">
+    <div class="preview" style="gap:10px;">
+      <span class="b" onclick="msg('success')">成功消息</span>
+      <span class="b" onclick="msg('warning')">警告消息</span>
+      <span class="b" onclick="msg('danger')">错误消息</span>
+      <span class="b" onclick="msg('info')">信息消息</span>
+    </div>
+    <div class="code-bar"><span class="lbl">点击试试（本页内模拟）</span><span class="toggle" onclick="tg(this)">▾ 显示代码</span></div>
+    <pre class="code"><span class="cm">// 应用根部挂一次宿主</span>
+&lt;<span class="tg">GxMessageHost</span> /&gt;
+
+<span class="cm">// 任意位置命令式调用</span>
+GxMessage.success(<span class="st">"保存成功"</span>);
+GxMessage.error(<span class="st">"出错了"</span>);
+<span class="kw">const</span> close = GxMessage(<span class="st">"自定义"</span>, { type: <span class="st">"warning"</span>, duration: <span class="nm">5000</span> });
+<span class="fn">close</span>(); <span class="cm">// 提前关闭</span></pre>
+  </div>
+</section>
+
+<!-- ──────── Adaptive ──────── -->
+<section class="comp-sec" id="adaptive">
+  <div class="head"><h2>多端自适应</h2><span class="en">Adaptive</span></div>
+  <p class="desc">所有端差异收敛在 <code>src/adaptive.js</code>。数据源：<code>gx/device</code>（平台形态）+ <code>gx/viewport</code>（断点 / 安全区 / 键盘）。断点跟随内核口径，窗口 resize、折叠屏展开自动重算。</p>
+  <div class="props"><table>
+    <thead><tr><th style="width:22%">差异点</th><th>桌面（鼠标档）</th><th>移动（触控档）</th></tr></thead>
+    <tbody>
+      <tr><td>控件高度</td><td>40 / 32 / 24</td><td><b style="color:var(--success)">52 / 44 / 44</b>（命中下限 44 · WCAG 2.5.5）</td></tr>
+      <tr><td>Dialog</td><td>居中卡片</td><td>底部动作面板</td></tr>
+      <tr><td>Steps</td><td>横向</td><td>compact（&lt;600dp）自动纵向</td></tr>
+      <tr><td>CheckboxGroup</td><td>横向换行</td><td>纵向整行</td></tr>
+      <tr><td>Tooltip</td><td>hover 提示</td><td>不渲染（信息走 label）</td></tr>
+      <tr><td>Input 宽度</td><td>定宽 240</td><td>compact 强制满宽</td></tr>
+      <tr><td>点击反馈</td><td>视觉态</td><td>视觉态 + 轻震动（软降级）</td></tr>
+    </tbody>
+  </table></div>
+  <div class="demo">
+    <div class="preview" style="display:block;">
+<div style="background:var(--code-bg);border-radius:6px;padding:14px 18px;font-family:var(--mono);font-size:12.5px;line-height:1.7;color:#dce3ed;overflow-x:auto;">
+<span class="kw">import</span> { adaptive, safeArea, isCompact, setPointerOverride } <span class="kw">from</span> <span class="st">"gox-ui"</span>;<br><br>
+<span class="kw">const</span> a = <span class="fn">adaptive</span>();<br>
+<span class="cm">// { touch, compact, medium, expanded, platform, isMobile, isTablet }</span><br><br>
+&lt;<span class="tg">column</span> {...<span class="fn">safeArea</span>(<span class="nm">true</span>}&gt;…&lt;/<span class="tg">column</span>&gt; <span class="cm">// 刘海/手势条/键盘</span><br><br>
+<span class="fn">setPointerOverride</span>(<span class="nm">true</span>); <span class="cm">// 桌面模拟触控档调试</span></div>
+    </div>
+  </div>
+</section>
+
+</main>
+</div>
+
+<!-- 消息提示模拟层 -->
+<div id="msg-layer" style="position:fixed;top:72px;left:0;right:0;display:flex;flex-direction:column;align-items:center;gap:8px;z-index:999;pointer-events:none;"></div>
+
+<script>
+  // demo 代码折叠
+  function tg(el) {
+    var demo = el.closest('.demo');
+    demo.classList.toggle('open');
+    el.textContent = demo.classList.contains('open') ? '▴ 隐藏代码' : '▾ 显示代码';
+  }
+  // 消息模拟
+  function msg(type) {
+    var layer = document.getElementById('msg-layer');
+    var colors = { success:'var(--success)', warning:'var(--warning)', danger:'var(--danger)', info:'var(--info)' };
+    var texts = { success:'保存成功', warning:'注意警告', danger:'出错了', info:'信息提示' };
+    var el = document.createElement('div');
+    el.style.cssText = 'background:#fff;border:1px solid var(--border-light);border-radius:6px;box-shadow:0 4px 16px rgba(0,0,0,.1);padding:10px 18px;display:flex;gap:10px;align-items:center;font-size:13px;transition:opacity .3s;';
+    el.innerHTML = '<span style="color:'+colors[type]+';font-weight:700;">'+(type==='success'?'✓':type==='danger'?'✕':type==='warning'?'!':'i')+'</span>'+texts[type];
+    layer.appendChild(el);
+    setTimeout(function(){ el.style.opacity='0'; setTimeout(function(){el.remove();},300); }, 2600);
+  }
+  // 侧栏滚动高亮
+  var items = document.querySelectorAll('.side-item');
+  var secs = {};
+  items.forEach(function(a){ secs[a.getAttribute('data-id')] = document.getElementById(a.getAttribute('data-id')); });
+  items.forEach(function(a){ a.addEventListener('click', function(){ secs[a.getAttribute('data-id')].scrollIntoView({behavior:'smooth'}); }); });
+  window.addEventListener('scroll', function(){
+    var pos = window.scrollY + 100, cur = items[0];
+    items.forEach(function(a){ var s = secs[a.getAttribute('data-id')]; if (s && s.offsetTop <= pos) cur = a; });
+    items.forEach(function(a){ a.classList.remove('on'); });
+    if (cur) cur.classList.add('on');
+  }, { passive:true });
+  items[0].classList.add('on');
+  // 占位符模拟
+  document.querySelectorAll('.inp[data-ph]').forEach(function(el){
+    el.addEventListener('focus', function(){ if(!el.dataset.touched){ el.textContent=''; el.style.color='var(--text-1)'; } });
+    el.addEventListener('blur', function(){ if(!el.textContent.trim()){ el.textContent='回车提交'; el.style.color='#a8abb2'; el.dataset.touched=''; } else { el.dataset.touched='1'; } });
+  });
+</script>
+</body>
+</html>
