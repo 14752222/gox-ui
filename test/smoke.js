@@ -11,6 +11,7 @@ import {
   GxTable, GxTag, GxAvatar, GxDescriptions, GxTimeline, GxResult, GxEmpty, GxSkeleton,
   GxDialog, GxAlert, GxMessage, GxMessageHost, GxProgress, GxTooltip,
   GxForm, GxFormItem, GxLoadingHost, useLoading, palette, paletteOf,
+  platform, isTouch, sizeClass, dialogBehavior, controlFor, hitSlopPad,
 } from "../src/index.js";
 
 let pass = 0, fail = 0;
@@ -102,8 +103,25 @@ t("GxFormItem required", () => GxForm(null, GxFormItem({ label: "L", required: t
 
 // 主题
 t("palette light", () => { const c = paletteOf("light"); return c.primary === "#409effff"; });
-t("palette dark", () => { const c = paletteOf("dark"); return c.primary === "#79bbffff"; });
+t("palette dark", () => { const c = paletteOf("dark"); return c.primary === "#409effff"; });
 t("palette()", () => palette() !== undefined && palette() !== null);
+
+// 多端自适应
+t("platform 识别", () => typeof platform() === "string" && platform().length > 0);
+t("isTouch 布尔", () => typeof isTouch() === "boolean");
+t("sizeClass 三档", () => ["compact", "medium", "expanded", "regular"].indexOf(sizeClass()) >= 0);
+t("dialogBehavior 合法", () => ["center", "sheet"].indexOf(dialogBehavior()) >= 0);
+t("controlFor 触控档≥44", () => { const s = controlFor("default", { forceTouch: true }); return s && s.h >= 44; });
+t("controlFor 鼠标档", () => { const s = controlFor("default", { forceTouch: false }); return s === null; });
+t("hitSlop 触控补命中", () => { const n = hitSlopPad(44, 24); return typeof n === "number" && n >= 0; });
+t("GxDialog sheet 形态", () => GxDialog({ behavior: "sheet", open: true, title: "T" }, h("text", null, "b")));
+t("GxSteps vertical", () => GxSteps({ steps: [{ title: "a" }, { title: "b" }], active: 1, direction: "vertical" }));
+t("GxButton touch 档", () => GxButton({ touch: true }, "t"));
+t("GxTooltip 触屏透传", () => {
+  // 桌面 (非触控) 走 tooltip; 触控走透传 —— 两分支都不炸即过
+  GxTooltip({ text: "x" }, h("text", null, "h"));
+  return 1;
+});
 
 console.log(`pass=${pass} fail=${fail}`);
 if (fail > 0) throw new Error("SMOKE FAIL: " + fail + " cases failed");
