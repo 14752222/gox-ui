@@ -110,15 +110,29 @@ def close(hex_color):
 
 def main():
     out = sys.argv[1] if len(sys.argv) > 1 else "showcase.png"
-    hwnd = find_goxui_window()
-    if not hwnd:
-        print("NO WINDOW FOUND")
-        sys.exit(2)
-    cap = capture(hwnd, out)
-    if not cap:
-        sys.exit(3)
+    # 自启动 demo (保持父进程存活, 截图后关闭)
+    import subprocess, os
+    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    gox = os.environ.get("GOX_BIN", "C:/Users/13649/AppData/Local/Temp/gox-bin.exe")
+    proc = subprocess.Popen([gox, os.path.join(root, "demo", "showcase.js")],
+                            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, cwd=root)
+    try:
+        for _ in range(20):
+            import time; time.sleep(0.5)
+            hwnd = find_goxui_window()
+            if hwnd:
+                break
+        if not hwnd:
+            print("NO WINDOW FOUND")
+            sys.exit(2)
+        import time; time.sleep(1.0)
+        cap = capture(hwnd, out)
+        if not cap:
+            sys.exit(3)
+    finally:
+        try: proc.terminate()
+        except Exception: pass
     w, h, rgb = cap
-    import time; time.sleep(0.2)
 
     checks = []
 
